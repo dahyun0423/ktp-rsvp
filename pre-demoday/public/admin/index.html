@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>RSVP 관리자 · K-TECH PIONEERS</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <style>
+    :root { --bg: #07071a; --panel: #0f0f28; --line: rgba(140,150,255,.18); --ink: #f2f3ff; --ink-2: rgba(232,234,255,.65); --violet: #6b5cff; color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 'Pretendard Variable', system-ui, sans-serif; }
+    header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 20px 24px; border-bottom: 1px solid var(--line); }
+    header img { height: 22px; }
+    header h1 { margin: 0; font-size: 16px; font-weight: 600; color: var(--ink-2); }
+    .spacer { flex: 1; }
+    button, .btn { font: 600 14px/1 inherit; font-family: inherit; padding: 11px 16px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--ink); cursor: pointer; }
+    button.primary { background: var(--violet); border-color: var(--violet); }
+    button:disabled { opacity: .5; cursor: default; }
+    main { padding: 24px; }
+    .login { max-width: 360px; margin: 14vh auto; padding: 32px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+    .login h2 { margin: 0 0 6px; font-size: 20px; }
+    .login p { margin: 0 0 20px; color: var(--ink-2); font-size: 14px; }
+    input { width: 100%; padding: 13px 14px; margin-bottom: 12px; font: inherit; color: var(--ink); background: rgba(255,255,255,.05); border: 1px solid var(--line); border-radius: 10px; outline: none; }
+    input:focus { border-color: var(--violet); }
+    .login button { width: 100%; }
+    .err { color: #ff7f9a; font-size: 13px; min-height: 1em; margin: 8px 0 0; }
+    .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stat { padding: 16px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); min-width: 150px; }
+    .stat span { display: block; font-size: 12px; color: var(--ink-2); }
+    .stat strong { font-size: 26px; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .toolbar input { max-width: 320px; margin: 0; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); max-height: calc(100vh - 290px); }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
+    th { position: sticky; top: 0; background: #16163a; font-weight: 600; color: var(--ink-2); z-index: 1; }
+    td.wrap { white-space: normal; min-width: 220px; max-width: 360px; }
+    tr:hover td { background: rgba(107,92,255,.06); }
+    .empty { padding: 48px; text-align: center; color: var(--ink-2); }
+    a.btn { display: inline-flex; align-items: center; text-decoration: none; }
+    #eventSel { font: 600 14px/1 inherit; font-family: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: #121230; color: var(--ink); cursor: pointer; }
+    a.btn.sheet { background: #188038; border-color: #188038; }
+    .btn[hidden] { display: none; }
+    td.act { position: sticky; right: 0; background: var(--panel); }
+    tr:hover td.act { background: #15153a; }
+    td.act button { padding: 6px 10px; font-size: 13px; border-radius: 8px; }
+    td.act button + button { margin-left: 6px; }
+    button.danger { color: #ff7f9a; border-color: rgba(255,127,154,.35); }
+    .muted { color: var(--ink-2); font-size: 12px; }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 12px 18px; border-radius: 10px; background: #1d1d45; border: 1px solid var(--line); font-size: 14px; z-index: 20; }
+    dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; }
+    dialog::backdrop { background: rgba(0,0,0,.6); }
+    dialog form { padding: 24px; }
+    dialog h2 { margin: 0 0 4px; font-size: 18px; }
+    dialog label { display: block; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+    dialog label[hidden] { display: none; }
+    dialog label input, dialog textarea { margin: 6px 0 0; }
+    dialog textarea { width: 100%; min-height: 80px; padding: 12px 14px; font: inherit; color: var(--ink); background: rgba(255,255,255,.05); border: 1px solid var(--line); border-radius: 10px; outline: none; resize: vertical; }
+    dialog .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    dialog .checks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    dialog .checks label { display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); cursor: pointer; }
+    dialog .checks input { width: auto; margin: 0; accent-color: var(--violet); }
+    dialog .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    @media (max-width: 520px) { dialog .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/assets/ktp-logo.svg" alt="K-TECH PIONEERS" />
+    <h1 id="title">RSVP 관리자</h1>
+    <span class="spacer"></span>
+    <button id="logout" hidden>로그아웃</button>
+  </header>
+
+  <main>
+    <form class="login" id="login">
+      <h2>관리자 로그인</h2>
+      <p>RSVP 응답을 확인·수정하고 엑셀·구글 시트로 관리합니다.</p>
+      <input type="password" id="pw" placeholder="관리자 비밀번호" autocomplete="current-password" required />
+      <button class="primary" type="submit">확인</button>
+      <p class="err" id="loginErr"></p>
+    </form>
+
+    <section id="dash" hidden>
+      <div class="stats">
+        <div class="stat"><span>전체 신청</span><strong id="count">0</strong></div>
+        <div class="stat"><span>오늘 신청</span><strong id="today">0</strong></div>
+        <div class="stat"><span>마지막 갱신</span><strong id="updated" style="font-size:16px">-</strong></div>
+      </div>
+      <div class="toolbar">
+        <select id="eventSel" title="어느 응답을 볼지" hidden></select>
+        <input id="q" placeholder="이름·소속·이메일 검색" />
+        <span class="spacer"></span>
+        <button id="refresh">새로고침</button>
+        <a class="btn sheet" id="sheet" target="_blank" rel="noopener" hidden>구글 시트 열기 ↗</a>
+        <button id="sync" hidden title="사이트의 응답 전체로 구글 시트를 다시 채웁니다">시트 다시 동기화</button>
+        <button class="primary" id="xlsx">엑셀 다운로드 (.xlsx)</button>
+      </div>
+      <div class="table-wrap"><table id="table"></table></div>
+    </section>
+  </main>
+
+  <dialog id="edit">
+    <form method="dialog" id="editForm">
+      <h2>신청 정보 수정</h2>
+      <p class="muted" id="editMeta"></p>
+      <div class="grid">
+        <label>소속<input name="org" required /></label>
+        <label>성함<input name="name" required /></label>
+        <label>직책<input name="position" required /></label>
+        <label>휴대폰<input name="phone" required /></label>
+      </div>
+      <label>이메일<input name="email" type="email" required /></label>
+      <label id="sessionsField">희망 세션<div class="checks" id="sessionsBox"></div></label>
+      <label id="teamsField">관심 참가팀<div class="checks" id="teamsBox"></div></label>
+      <label id="matchingField">비즈니스 매칭 희망<div class="checks" id="matchingBox"></div></label>
+      <label>남기실 말씀<textarea name="message"></textarea></label>
+      <p class="err" id="editErr"></p>
+      <div class="actions">
+        <button type="button" id="editCancel">취소</button>
+        <button class="primary" type="submit" id="editSave">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module">
+    import event from '/event.config.js';
+    const $ = (s) => document.querySelector(s);
+    const KEY = 'ktp-rsvp-admin';
+    let pw = '';
+    try { pw = sessionStorage.getItem(KEY) || ''; } catch {}
+    let rows = [];
+
+    // ?event=<예전 id> 로 들어오면 그 응답을 보여준다(event.config.js 의 previousIds)
+    const prev = event.previousIds || [];
+    const asked = new URLSearchParams(location.search).get('event');
+    const EV = prev.some((p) => p.id === asked) ? asked : '';
+    const evq = EV ? `event=${encodeURIComponent(EV)}` : '';
+    $('#title').textContent = `${event.title} · RSVP 관리자${EV ? ` (${prev.find((p) => p.id === EV).label})` : ''}`;
+    if (prev.length) {
+      const sel = $('#eventSel');
+      sel.innerHTML = [`<option value="">현재 응답</option>`, ...prev.map((p) => `<option value="${p.id}">${p.label}</option>`)].join('');
+      sel.value = EV;
+      sel.hidden = false;
+      sel.addEventListener('change', () => (location.search = sel.value ? `?event=${encodeURIComponent(sel.value)}` : ''));
+    }
+
+    const cols = [
+      ['submittedAt', '제출일시'], ['org', '소속'], ['name', '성함'], ['position', '직책'],
+      ['phone', '휴대폰'], ['email', '이메일'], ['sessions', '희망 세션'], ['teams', '관심 참가팀'], ['matching', '비즈니스 매칭'], ['message', '남기실 말씀'],
+    ].filter(([k]) => (k !== 'sessions' || event.sessions.length) && (k !== 'teams' || event.askTeams) && (k !== 'matching' || event.matching?.length));
+    const kst = (iso) => new Date(iso).toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 16);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+    async function load() {
+      const res = await fetch(`/api/responses${evq ? `?${evq}` : ''}`, { headers: { 'x-admin-key': pw } });
+      if (res.status === 401) throw new Error('비밀번호가 올바르지 않습니다.');
+      if (!res.ok) throw new Error('불러오기에 실패했습니다.');
+      const data = await res.json();
+      rows = data.rows.reverse();
+      $('#sheet').hidden = $('#sync').hidden = !data.sheetUrl;
+      if (data.sheetUrl) $('#sheet').href = data.sheetUrl;
+      const today = kst(new Date().toISOString()).slice(0, 10);
+      $('#count').textContent = rows.length;
+      $('#today').textContent = rows.filter((r) => kst(r.submittedAt).startsWith(today)).length;
+      $('#updated').textContent = kst(new Date().toISOString()).slice(11);
+      render();
+    }
+
+    function render() {
+      const q = $('#q').value.trim().toLowerCase();
+      const list = q ? rows.filter((r) => [r.name, r.org, r.email, r.position].join(' ').toLowerCase().includes(q)) : rows;
+      if (!list.length) { $('#table').innerHTML = `<tr><td class="empty">${rows.length ? '검색 결과가 없습니다.' : '아직 신청이 없습니다.'}</td></tr>`; return; }
+      $('#table').innerHTML = `<thead><tr><th>#</th>${cols.map(([, h]) => `<th>${h}</th>`).join('')}<th class="act">관리</th></tr></thead><tbody>${list
+        .map((r, i) => `<tr><td>${list.length - i}</td>${cols.map(([k]) => {
+          const v = k === 'submittedAt' ? kst(r[k]) : Array.isArray(r[k]) ? r[k].join(', ') : r[k];
+          return `<td class="${k === 'teams' || k === 'message' ? 'wrap' : ''}">${esc(v)}</td>`;
+        }).join('')}<td class="act"><button data-edit="${esc(r.id)}">수정</button><button class="danger" data-del="${esc(r.id)}">삭제</button></td></tr>`).join('')}</tbody>`;
+    }
+
+    function toast(msg) {
+      const t = Object.assign(document.createElement('div'), { className: 'toast', textContent: msg });
+      document.body.append(t); setTimeout(() => t.remove(), 3000);
+    }
+    const sheetNote = (d) => (d.sheet === false && !$('#sheet').hidden ? ' (구글 시트 반영 실패 — "시트 다시 동기화"를 눌러주세요)' : '');
+
+    async function api(method, query, body) {
+      const res = await fetch(`/api/responses?${[query, evq].filter(Boolean).join('&')}`, {
+        method, headers: { 'x-admin-key': pw, ...(body && { 'content-type': 'application/json' }) },
+        body: body && JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw Object.assign(new Error(data.error || (data.errors && Object.values(data.errors)[0]) || '처리에 실패했습니다.'), { data });
+      return data;
+    }
+
+    const checks = (box, name, options, selected) => {
+      box.innerHTML = options.map((o) => `<label><input type="checkbox" name="${name}" value="${esc(o)}" ${selected.includes(o) ? 'checked' : ''} />${esc(o)}</label>`).join('');
+    };
+    $('#sessionsField').hidden = !event.sessions.length;
+    $('#teamsField').hidden = !event.askTeams;
+    $('#matchingField').hidden = !event.matching?.length;
+    let editing = null;
+
+    function openEdit(r) {
+      editing = r;
+      const f = $('#editForm');
+      for (const k of ['org', 'name', 'position', 'phone', 'email', 'message']) f.elements[k].value = r[k] || '';
+      checks($('#sessionsBox'), 'sessions', event.sessions, r.sessions || []);
+      checks($('#teamsBox'), 'teams', event.teams.map((t) => t.name), r.teams || []);
+      $('#matchingBox').innerHTML = (event.matching || []).map((o) => `<label><input type="radio" name="matching" value="${esc(o)}" ${r.matching === o ? 'checked' : ''} />${esc(o)}</label>`).join('');
+      $('#editMeta').textContent = `제출 ${kst(r.submittedAt)}${r.updatedAt ? ` · 마지막 수정 ${kst(r.updatedAt)}` : ''}`;
+      $('#editErr').textContent = '';
+      $('#edit').showModal();
+    }
+
+    $('#table').addEventListener('click', async (e) => {
+      const editId = e.target.dataset.edit, delId = e.target.dataset.del;
+      if (editId) return openEdit(rows.find((r) => r.id === editId));
+      if (!delId) return;
+      const r = rows.find((x) => x.id === delId);
+      const b = e.target;
+      // 브라우저 confirm 창 대신 버튼을 한 번 더 눌러 확인한다
+      if (b.dataset.armed !== '1') {
+        b.dataset.armed = '1'; b.textContent = '정말 삭제?';
+        setTimeout(() => { if (b.isConnected) { b.dataset.armed = ''; b.textContent = '삭제'; } }, 3000);
+        return;
+      }
+      b.disabled = true; b.textContent = '삭제 중…';
+      try {
+        const d = await api('DELETE', `id=${encodeURIComponent(delId)}`);
+        rows = rows.filter((x) => x.id !== delId);
+        $('#count').textContent = rows.length;
+        render(); toast(`${r.name} 님 신청을 삭제했습니다.${sheetNote(d)}`);
+      } catch (err) { toast(err.message); b.disabled = false; b.textContent = '삭제'; b.dataset.armed = ''; }
+    });
+
+    $('#editCancel').addEventListener('click', () => $('#edit').close());
+    $('#editForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target, b = $('#editSave');
+      const picked = (n) => [...f.querySelectorAll(`input[name="${n}"]:checked`)].map((x) => x.value);
+      const body = Object.fromEntries(['org', 'name', 'position', 'phone', 'email', 'message'].map((k) => [k, f.elements[k].value]));
+      body.sessions = picked('sessions'); body.teams = picked('teams'); body.matching = picked('matching')[0] || '';
+      b.disabled = true; b.textContent = '저장 중…';
+      try {
+        const d = await api('PATCH', `id=${encodeURIComponent(editing.id)}`, body);
+        rows = rows.map((x) => (x.id === editing.id ? d.row : x));
+        render(); $('#edit').close(); toast(`저장했습니다.${sheetNote(d)}`);
+      } catch (err) { $('#editErr').textContent = err.message; }
+      finally { b.disabled = false; b.textContent = '저장'; }
+    });
+
+    $('#sync').addEventListener('click', async () => {
+      const b = $('#sync'); b.disabled = true; b.textContent = '동기화 중…';
+      try { const d = await api('POST', 'action=sync'); toast(`구글 시트에 ${d.count}건을 반영했습니다.`); }
+      catch (err) { toast(err.message); }
+      finally { b.disabled = false; b.textContent = '시트 다시 동기화'; }
+    });
+
+    async function enter() {
+      try {
+        await load();
+        try { sessionStorage.setItem(KEY, pw); } catch {}
+        $('#login').hidden = true; $('#dash').hidden = false; $('#logout').hidden = false;
+      } catch (e) {
+        $('#loginErr').textContent = e.message;
+        try { sessionStorage.removeItem(KEY); } catch {}
+      }
+    }
+
+    $('#login').addEventListener('submit', (e) => { e.preventDefault(); pw = $('#pw').value; enter(); });
+    $('#logout').addEventListener('click', () => { try { sessionStorage.removeItem(KEY); } catch {} location.reload(); });
+    $('#q').addEventListener('input', render);
+    $('#refresh').addEventListener('click', () => load().catch((e) => ($('#updated').textContent = e.message)));
+    $('#xlsx').addEventListener('click', async () => {
+      const b = $('#xlsx'); b.disabled = true; b.textContent = '생성 중…';
+      try {
+        const res = await fetch(`/api/responses?format=xlsx${evq ? `&${evq}` : ''}`, { headers: { 'x-admin-key': pw } });
+        if (!res.ok) throw new Error('다운로드에 실패했습니다.');
+        const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || 'rsvp.xlsx';
+        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(await res.blob()), download: name });
+        a.click(); URL.revokeObjectURL(a.href);
+      } catch (e) { $('#loginErr').textContent = e.message; }
+      finally { b.disabled = false; b.textContent = '엑셀 다운로드 (.xlsx)'; }
+    });
+
+    if (pw) enter();
+  </script>
+</body>
+</html>

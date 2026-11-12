@@ -1,0 +1,12 @@
+{
+  "name": "ktp-demoday",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.2",
+    "exceljs": "^4.4.0"
+  }
+}

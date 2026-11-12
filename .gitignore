@@ -1,0 +1,6 @@
+node_modules/
+.vercel/
+.env*
+.DS_Store
+tools/notion/raw/
+tools/notion/img/
